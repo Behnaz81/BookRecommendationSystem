@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.pyc
+
+# Django
+db.sqlite3
+*.log
+*.pot
+*.pyc
+media/
+staticfiles/
+.env
+
+# VSCode
+.vscode/
+
+# Mac
+.DS_Store
+
+# Env
+.env
+
+# Migrations (اختیاری)
+*/migrations/__pycache__/
+*/migrations/*.pyc
+*/migrations/*.pyo
+
+.venv
