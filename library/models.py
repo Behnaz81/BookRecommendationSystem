@@ -18,9 +18,9 @@ class Author(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    authors = models.ManyToManyField(Author)
     genres = models.ManyToManyField(Genre)
-    published_date = models.DateField(null=True, blank=True)
+    published_year = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.title
