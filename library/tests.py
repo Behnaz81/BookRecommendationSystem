@@ -1,3 +1,5 @@
+from http.client import responses
+
 from rest_framework.test import APITestCase
 from rest_framework import status
 from .models import Book, Author
@@ -96,4 +98,97 @@ class RecommenderTestCase(APITestCase):
         response = self.client.post('/api/books/recommender/', {'book_ids': [self.book1.id, self.book3.id, self.book4.id, self.book2.id]}, content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['error'], "Enter 3 favorite books!")
+
+class SearchTestCase(APITestCase):
+    def setUp(self):
+        author = Author.objects.create(name="Test Author")
+
+        self.book1 = Book.objects.create(title="Harry Potter and the Half-Blood Prince", description="", published_year=2000)
+        self.book1.authors.add(author)
+
+        self.book2 = Book.objects.create(title="Harry Potter and the Deathly Hallows", description="",
+                                         published_year=2000)
+        self.book2.authors.add(author)
+
+        self.book3 = Book.objects.create(title="Pride and Prejudice", description="",
+                                         published_year=2000)
+        self.book3.authors.add(author)
+
+    def test_search_books_found(self):
+        response = self.client.get('/api/books/search/?title=harry')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+        for book in response.data['result']:
+            self.assertIn('id', book)
+            self.assertIn('title', book)
+            self.assertIn('authors', book)
+            self.assertIn('description', book)
+            self.assertIn('published_year', book)
+            self.assertIn('genres', book)
+            self.assertIn('harry', book['title'].lower())
+
+
+    def test_search_books_found_case_insensetive(self):
+        response = self.client.get('/api/books/search/?title=HaRry')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+        for book in response.data['result']:
+            self.assertIn('id', book)
+            self.assertIn('title', book)
+            self.assertIn('authors', book)
+            self.assertIn('description', book)
+            self.assertIn('published_year', book)
+            self.assertIn('genres', book)
+            self.assertIn('harry', book['title'].lower())
+
+    def test_trimmed_title(self):
+        response = self.client.get('/api/books/search/?title=  harry   ')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+        for book in response.data['result']:
+            self.assertIn('id', book)
+            self.assertIn('title', book)
+            self.assertIn('authors', book)
+            self.assertIn('description', book)
+            self.assertIn('published_year', book)
+            self.assertIn('genres', book)
+            self.assertIn('harry', book['title'].lower())
+
+    def test_performance(self):
+        start = time.time()
+        self.client.get('/api/books/search/?title=harry')
+        end = time.time()
+        self.assertLess(end - start, 1.0)
+
+    def test_no_similar_book(self):
+        response = self.client.get('/api/books/search/?title=tree')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['result']), 0)
+
+    def test_partial_title(self):
+        response = self.client.get('/api/books/search/?title=potter')
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_no_title_sent(self):
+        response = self.client.get('/api/books/search/')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Title parameter is required and cannot be empty.')
+
+
+    def test_empty_title(self):
+        response = self.client.get('/api/books/search/?title=')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Title parameter is required and cannot be empty.')
+
+    def test_especial_characters(self):
+        response = self.client.get('/api/books/search/?title=سلام')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get('result', [])), 0)
+
+    def test_low_long_title(self):
+        response = self.client.get('/api/books/search/?title=h')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Title should be at least 3 characters long')
+
 
