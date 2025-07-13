@@ -32,13 +32,16 @@ class MultiBookRecommendationView(APIView):
 
 class SearchBooks(APIView):
     def get(self, request):
-        title = request.query_params.get("title")
+        title = request.query_params.get("title", "").strip()
         if not title:
-            return Response({'error': 'Invalid input'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Title parameter is required and cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(title) <= 2:
+            return Response({'error': 'Title should be at least 3 characters long'}, status=status.HTTP_400_BAD_REQUEST)
 
         result = Book.objects.filter(title__icontains=title)
-        if not result:
-            return Response({'error': 'Book Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        if not result.exists():
+            return Response({'result': []}, status=status.HTTP_200_OK)
 
         serializer = BookSerializer(result, many=True)
-        return Response(serializer.data)
+        return Response({'result': serializer.data})
