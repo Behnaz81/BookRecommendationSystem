@@ -28,3 +28,17 @@ class MultiBookRecommendationView(APIView):
         recommended_books = get_recommendations_based_on_books(book_ids, top_n=10)
         serializer = BookSerializer(recommended_books, many=True)
         return Response(serializer.data)
+
+
+class SearchBooks(APIView):
+    def get(self, request):
+        title = request.query_params.get("title")
+        if not title:
+            return Response({'error': 'Invalid input'}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = Book.objects.filter(title__icontains=title)
+        if not result:
+            return Response({'error': 'Book Not Found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = BookSerializer(result, many=True)
+        return Response(serializer.data)
