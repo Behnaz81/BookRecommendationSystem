@@ -1,4 +1,10 @@
 import requests
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bookrecommender.settings')
+django.setup()
+
 from library.models import Book, Author, Genre
 
 def fetch_all_books(limit=100, total_books=1000):
