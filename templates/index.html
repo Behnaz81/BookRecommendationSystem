@@ -1,22 +1,35 @@
 {% load static %}
+{% csrf_token %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Book Search</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>Book Recommender</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="p-4">
 
-  <div class="container mt-5">
-    <h2 class="mb-4">Search for a Book</h2>
-    <div class="input-group mb-3">
-      <input type="text" id="searchInput" class="form-control" placeholder="Enter book title..." />
-      <button class="btn btn-primary" onclick="searchBooks()">Search</button>
-    </div>
-    <div id="results" class="mt-4"></div>
-  </div>
+  <div class="input-group mb-4">
+  <input type="text" id="search-input" class="form-control" placeholder="Search books...">
+  <button id="search-btn" class="btn btn-primary">Search</button>
+</div>
+
+
+  <div id="selected-books-section" style="display: none;">
+  <h5>Selected Books (Max 3):</h5>
+  <div id="selected-books" class="d-flex flex-wrap"></div>
+</div>
+
+<div id="search-results-section" style="display: none;">
+  <h5>Search Results:</h5>
+  <div id="search-results" class="row"></div>
+</div>
+
+<div id="recommended-books-section" style="display: none;">
+  <h5>Recommended Books:</h5>
+  <div id="recommendations" class="row"></div>
+</div>
+
 
   <script src="{% static 'js/script.js' %}"></script>
 </body>
