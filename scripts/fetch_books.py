@@ -13,7 +13,12 @@ def fetch_all_books(limit=100, total_books=1000):
 
     for page in range(1, num_pages + 1):
         url = f"https://openlibrary.org/search.json?q=*&language=eng&limit={limit}&page={page}"
-        response = requests.get(url)
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"Couldn't connect {page}: {e}")
+            continue
 
         if response.status_code == 200:
             data = response.json()
