@@ -45,3 +45,9 @@ class SearchBooks(APIView):
 
         serializer = BookSerializer(result, many=True)
         return Response({'result': serializer.data})
+
+class BookListAPI(APIView):
+    def get(self, request):
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
